@@ -45,3 +45,31 @@
 (define (interp_Lint p)
   (match p
     [(Program '() e) (interp_exp e)]))
+
+;;; Partial evaluation
+(define (pe_negate a)
+  (match a
+    [(Int n) (Int (- 0 n))]
+    [_ (negate a)]))
+
+(define (pe_minus a b)
+  (match* (a b)
+    [((Int na) (Int nb)) (Int (- na nb))]
+    [(_ _) (minus a b)]))
+
+(define (pe_plus a b)
+  (match* (a b)
+    [((Int na) (Int nb)) (Int (+ na nb))]
+    [(_ _) (plus a b)]))
+
+(define (pe_exp e)
+  (match e
+    [(Int n) (Int n)]
+    [(Prim 'read '()) rd]
+    [(Prim '- (list a))   (pe_negate (pe_exp a))]
+    [(Prim '- (list a b)) (pe_minus (pe_exp a) (pe_exp b))]
+    [(Prim '+ (list a b)) (pe_plus (pe_exp a) (pe_exp b))]))
+
+(define (pe_Lint p)
+  (match p
+    [(Program '() e) (Program '() (pe_exp e))]))
