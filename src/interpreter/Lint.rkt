@@ -33,48 +33,48 @@
     [_ #f]))
 
 ;;; Interpreter
-(define (interp_exp e)
+(define (interp-exp e)
   (match e
     [(Int n) n]
     [(Prim 'read '())
      (let ([r (read)])
        (cond [(fixnum? r) r]
-             [else (error 'interp_exp "read expected an integer: ~v" r)]))]
-    [(Prim '- (list a))   (- 0 (interp_exp a))]
-    [(Prim '- (list a b)) (- (interp_exp a) (interp_exp b))]
-    [(Prim '+ (list a b)) (+ (interp_exp a) (interp_exp b))]))
+             [else (error 'interp-exp "read expected an integer: ~v" r)]))]
+    [(Prim '- (list a))   (- 0 (interp-exp a))]
+    [(Prim '- (list a b)) (- (interp-exp a) (interp-exp b))]
+    [(Prim '+ (list a b)) (+ (interp-exp a) (interp-exp b))]))
 
-(define (interp_Lint p)
+(define (interp-Lint p)
   (match p
-    [(Program '() e) (interp_exp e)]))
+    [(Program '() e) (interp-exp e)]))
 
 ;;; Partial evaluation
-(define (pe_negate a)
+(define (pe-negate a)
   (match a
     [(Int n) (Int (- 0 n))]
     [_ (negate a)]))
 
-(define (pe_minus a b)
+(define (pe-minus a b)
   (match* (a b)
     [((Int na) (Int nb)) (Int (- na nb))]
     [(_ _) (minus a b)]))
 
-(define (pe_plus a b)
+(define (pe-plus a b)
   (match* (a b)
     [((Int na) (Int nb)) (Int (+ na nb))]
     [(_ _) (plus a b)]))
 
-(define (pe_exp e)
+(define (pe-exp e)
   (match e
     [(Int n) (Int n)]
     [(Prim 'read '()) rd]
-    [(Prim '- (list a))   (pe_negate (pe_exp a))]
-    [(Prim '- (list a b)) (pe_minus (pe_exp a) (pe_exp b))]
-    [(Prim '+ (list a b)) (pe_plus (pe_exp a) (pe_exp b))]))
+    [(Prim '- (list a))   (pe-negate (pe-exp a))]
+    [(Prim '- (list a b)) (pe-minus (pe-exp a) (pe-exp b))]
+    [(Prim '+ (list a b)) (pe-plus (pe-exp a) (pe-exp b))]))
 
-(define (pe_Lint p)
+(define (pe-Lint p)
   (match p
-    [(Program '() e) (Program '() (pe_exp e))]))
+    [(Program '() e) (Program '() (pe-exp e))]))
 
 (define interp-Lint%
   (class object%
